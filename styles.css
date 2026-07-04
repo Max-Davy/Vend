@@ -52,6 +52,8 @@ main {
     min-height: 0px;
     color: white;
     overflow: auto;
+    scrollbar-width: none; /* Hide scrollbar */
+    scrollbar-color: transparent transparent; /* Optional: Hide thumb */
 }
 
 .card.serial-card {
