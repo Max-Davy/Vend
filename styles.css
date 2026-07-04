@@ -1,0 +1,306 @@
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    padding: 1rem 2rem 3rem;
+    background: black;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+html {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    margin-top: 0;
+    margin-bottom: 0;
+    flex: 1 1 auto;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: auto;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    min-height: 0;
+    flex: 1 1 50%;
+}
+
+main {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.card {
+    background: #363636;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    flex: 1 1 50%;
+    min-width: 260px;
+    min-height: 0px;
+    color: white;
+    overflow: auto;
+}
+
+.card.serial-card {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.card span:not(.hljs *) {
+  color: white;
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+.slider-block {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+    padding: 0 2px;
+    color: #555;
+}
+
+.slider-row {
+    position: relative;
+    width: 100%;
+}
+
+.slider-value {
+    position: absolute;
+    top: 22px;
+    /* adjust as needed */
+    transform: translateX(-50%);
+    pointer-events: none;
+    font-size: 0.85rem;
+}
+
+.header-image {
+    height: 60pt;
+    width: 60pt;
+}
+
+button {
+    cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    background: #1976d2;
+    color: #fff;
+}
+
+button:disabled {
+    background: #aaa;
+    cursor: default;
+}
+
+#status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+#status-icon {
+    font-size: 1.6rem;
+}
+
+.status-text {
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+#output-progress-container {
+    margin-top: 0.75rem;
+    display: none;
+}
+
+#output-progress-bar {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #ddd;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+
+#output-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #43a047;
+    transition: width 0.3s linear;
+}
+
+#serial-monitor, .serial-monitor {
+    background: #111;
+    color: #eee;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.log-out {
+    color: #80cbc4;
+}
+
+.log-in {
+    color: #ffcc80;
+}
+
+.log-info {
+    color: #90caf9;
+}
+
+#vending-count {
+    font-size: 1.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+canvas {
+    width: 100%;
+    max-width: 100%;
+    background: #fafafa;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.top-bar {
+    display: flex;
+    width: 100%;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.top-bar span {
+    font-size: 0.9rem;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 15px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    border-radius: 7px;
+}
+
+input[type="range"]:hover {
+    opacity: 1;
+}
+
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 13px;
+    border-color: white;
+    border-width: 1px;
+    background: #1976d2;
+    cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 13px;
+    border-color: white;
+    border-width: 1px;
+    background: #1976d2;
+    cursor: pointer;
+}
+
+.cover {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.cover-content {
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 28px;
+    color: white;
+}
+
+.icon-btn:hover {
+    color: #777;
+}
+
+.language-cpp {
+    background:#111 !important;
+}
+
+.code-box {
+    max-height:70vh;
+    margin-top:30px;
+}

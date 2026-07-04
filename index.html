@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Pain Machine</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+
+<body>
+    <div id="info-cover" class="cover">
+        <div class="card cover-content">
+            <button id="close-cover" class="icon-btn close-btn">
+                <i class="mdi mdi-close-circle-outline"></i>
+            </button>
+            <div class="code-box serial-monitor">
+                <pre><code class="language-cpp">
+#include <AcksenButton.h>
+#define DEBUG_BAUD_RATE		9600
+
+//INPUT PINS
+#define PAIN_BUTTON_PIN   				12
+
+//OUTPUT PINS
+#define BLUE_LED_PIN      				7
+#define RED_LED_PIN       				8
+#define GREEN_LED_PIN     				9
+
+#define PAIN_OUTPUT								A0  
+
+//TIMING
+#define BUTTON_DEBOUNCE_INTERVAL  200 // Milliseconds
+int VEND_TIME = 									10; //Seconds
+int PAIN_TIME = 									5; //Seconds
+
+AcksenButton painButton	=	AcksenButton(PAIN_BUTTON_PIN, ACKSEN_BUTTON_MODE_LONGPRESS, BUTTON_DEBOUNCE_INTERVAL, INPUT);
+
+//STATE MANAGEMENT
+enum state {WAITING, PAIN, VENDING};
+state currentState = WAITING;
+
+String incomingData = ""; // for incoming serial data
+
+void setup()
+{
+	Serial.begin(DEBUG_BAUD_RATE);
+	painButton.setLongPressInterval(PAIN_TIME*1000);	// *1000 to convert s to ms
+	Serial.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	Serial.println("Pain Machine V2.0 by Max Davy for Open Sauce 2026");
+	Serial.println("Available commands:\n\t'pain x' to set pain time to x seconds\n\t'vend x' to set selection wait time to x seconds");
+
+  pinMode(BLUE_LED_PIN, OUTPUT);
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+
+	pinMode(PAIN_OUTPUT, OUTPUT);
+}
+
+void loop()
+{
+	//UPDATE STATE
+	painButton.refreshStatus();
+  digitalWrite(BLUE_LED_PIN, LOW);
+  digitalWrite(RED_LED_PIN, LOW);
+  digitalWrite(GREEN_LED_PIN, LOW);
+	digitalWrite(PAIN_OUTPUT, HIGH);
+
+	//CHECK FOR SERIAL INPUT
+	if (Serial.available() > 0) {
+		// read the incoming byte:
+		incomingData = Serial.readString();
+
+		String command = incomingData.substring(0,incomingData.indexOf(' '));
+		int value = incomingData.substring(incomingData.indexOf(' ') + 1).toInt();
+
+		if(value<=0) {
+			Serial.print("status invalid");
+		}
+		else if(command=="vend") {
+			VEND_TIME = value;
+			Serial.print("vend ");
+			Serial.print(value);
+		}
+		else if(command=="pain") {
+			PAIN_TIME = value;
+			painButton.setLongPressInterval(PAIN_TIME*1000);
+			Serial.print("pain ");
+			Serial.print(value);
+		}
+		else {
+			Serial.print("status invalid");
+		}
+	}
+
+	//HANDLE BUTTON PRESS
+  switch (currentState) {
+    case WAITING:
+			// Vending machine is idle waiting for input
+			digitalWrite(BLUE_LED_PIN, HIGH);
+      if (painButton.getButtonState() == true)
+	    {
+				Serial.println("status pain");
+        currentState = PAIN;
+	    }
+      break;
+    case PAIN:
+			// Vending machine is administering pain
+			digitalWrite(RED_LED_PIN, HIGH);
+			
+      if (painButton.getButtonState() == false)
+	    {
+		    Serial.println("status incomplete");
+        currentState = WAITING;
+	    }
+      else if (painButton.onLongPress() == true)
+      {
+        Serial.println("status vending");
+        currentState = VENDING;
+      }
+      break;
+    case VENDING:
+			digitalWrite(GREEN_LED_PIN, HIGH);
+			// User has selected a product. Vend product and return to idle.
+      
+			digitalWrite(PAIN_OUTPUT, LOW);
+			delay(VEND_TIME * 1000);
+			digitalWrite(PAIN_OUTPUT, HIGH);
+			Serial.println("status standby");
+			currentState = WAITING;
+      break;
+    default:
+      Serial.print("status error");
+			currentState = WAITING;
+      break;
+  }
+
+	// Delay for one second before running the main loop again
+	delay(1000);
+}
+    </code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <img class="header-image" src="./images/pain.svg"></img>
+        <h1>Pain Machine</h1>
+        <div>
+            <button id="connect-btn">Connect</button>
+            <span id="connection-status">Not connected</span>
+        </div>
+        <div>
+            <button id="info-btn" class="icon-btn" title="View source code">
+                <i class="mdi mdi-code-braces"></i>
+            </button>
+        </div>
+    </div>
+    <main>
+        <div class="row">
+            <div class="card">
+                <h2>Controls</h2>
+                <label for="output-slider">Pain Level</label>
+                <div class="slider-block">
+                    <div class="slider-labels">
+                        <span class="min-label">1</span>
+                        <span class="max-label">10</span>
+                    </div>
+
+                    <div class="slider-row">
+                        <input id="output-slider" type="range" min="1" max="10" value="5">
+                        <div class="slider-value" id="output-value">5</div>
+                    </div>
+                </div>
+
+                <label for="vend-slider">Vending timeout (seconds)</label>
+                <div class="slider-block">
+                    <div class="slider-labels">
+                        <span class="min-label">1</span>
+                        <span class="max-label">100</span>
+                    </div>
+
+                    <div class="slider-row">
+                        <input id="vend-slider" type="range" min="1" max="100" value="10">
+                        <div class="slider-value" id="vend-value">5</div>
+                    </div>
+                </div>
+
+                <button id="send-settings-btn" disabled>Apply</button>
+            </div>
+
+            <div class="card">
+                <h2>Status</h2>
+                <div id="status-indicator">
+                    <i id="status-icon" class="mdi mdi-help-circle-outline"></i>
+                    <span class="status-text" id="status-text">unknown</span>
+                </div>
+                <div id="output-progress-container">
+                    <div>
+                        Output progress: <span id="output-progress-seconds">0</span>s / <span
+                            id="output-progress-total">0</span>s
+                    </div>
+                    <div id="output-progress-bar">
+                        <div id="output-progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Statistics</h2>
+                <div>Sales</div>
+                <div id="vending-count">0</div>
+                <hr>
+                <div>Sales by Pain Level</div>
+                <canvas id="vending-chart" width="400" height="220"></canvas>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="card serial-card">
+                <h2>Serial Monitor</h2>
+                <div id="serial-monitor" class="serial-monitor"></div>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+        <script src="./serial.js"></script>
+    </main>
+</body>
+
+</html>
