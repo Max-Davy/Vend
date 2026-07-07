@@ -185,7 +185,7 @@ function drawVendingChart() {
     ctx.textBaseline = 'top';
 
     // axes
-    ctx.strokeStyle = '#bbb';
+    ctx.strokeStyle = '#ffffff';
     ctx.beginPath();
     ctx.moveTo(padding, padding);
     ctx.lineTo(padding, h - padding);
@@ -193,7 +193,7 @@ function drawVendingChart() {
     ctx.stroke();
 
     if (maxCount === 0) {
-        ctx.fillStyle = '#999';
+        ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('No vending events yet', w / 2, h / 2);
@@ -212,7 +212,7 @@ function drawVendingChart() {
         ctx.fillRect(xLeft, yTop, barWidth, barHeight);
 
         // label (x)
-        ctx.fillStyle = '#444';
+        ctx.fillStyle = '#ffffff';
         ctx.textBaseline = 'top';
         ctx.fillText(String(x), xCenter, h - padding + 4);
 

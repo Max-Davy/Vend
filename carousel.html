@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: Verdana, sans-serif;
+            margin: 0;
+            background-color: black
+        }
+
+        .mySlides {
+            display: none
+        }
+
+        img {
+            vertical-align: middle;
+        }
+
+        /* Slideshow container */
+        .slideshow-container {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            margin: auto;
+        }
+
+        .mySlides {
+            width: 100%;
+            height: 100%;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border-width: 0px;
+        }
+
+        img {
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        /* Next & previous buttons */
+        .prev,
+        .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -22px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+        }
+
+        /* Position the "next button" to the right */
+        .next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+        /* On hover, add a black background color with a little bit see-through */
+        .prev:hover,
+        .next:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Caption text */
+        .text {
+            color: #f2f2f2;
+            font-size: 15px;
+            padding: 8px 12px;
+            position: absolute;
+            bottom: 8px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Number text (1/3 etc) */
+        .numbertext {
+            color: #f2f2f2;
+            font-size: 12px;
+            padding: 8px 12px;
+            position: absolute;
+            bottom: 25px;
+            right: 50%;
+        }
+
+        /* The dots/bullets/indicators */
+        .dot {
+            cursor: pointer;
+            height: 15px;
+            width: 15px;
+            margin: 0 2px;
+            background-color: #717171;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+        }
+
+        .dots {
+            position: absolute;
+            bottom: 30px;
+            left: 50%
+        }
+
+        .active,
+        .dot:hover {
+            background-color: #bbb;
+        }
+
+        /* Fading animation */
+        .fade {
+            animation-name: fade;
+            animation-duration: 1.5s;
+        }
+
+        @keyframes fade {
+            from {
+                opacity: .4
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        /* On smaller screens, decrease text size */
+        @media only screen and (max-width: 300px) {
+
+            .prev,
+            .next,
+            .text {
+                font-size: 11px
+            }
+        }
+
+        .code-box {
+            height: 100%;
+            overflow: scroll;
+            overscroll-behavior: contain;
+            scroll-behavior: auto;
+            /* avoid fighting our JS */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="slideshow-container">
+
+        <div class="mySlides fade">
+            <div class="numbertext">1 / 3</div>
+            <iframe src="./index.html"></iframe>
+        </div>
+
+        <div class="mySlides fade">
+            <div class="numbertext">2 / 3</div>
+            <div class="code-box">
+                <pre><code class="language-cpp">
+#include <AcksenButton.h>
+#define DEBUG_BAUD_RATE		9600
+
+//INPUT PINS
+#define PAIN_BUTTON_PIN   				12
+
+//OUTPUT PINS
+#define BLUE_LED_PIN      				7
+#define RED_LED_PIN       				8
+#define GREEN_LED_PIN     				9
+
+#define PAIN_OUTPUT								A0  
+
+//TIMING
+#define BUTTON_DEBOUNCE_INTERVAL  200 // Milliseconds
+int VEND_TIME = 									10; //Seconds
+int PAIN_TIME = 									5; //Seconds
+
+AcksenButton painButton	=	AcksenButton(PAIN_BUTTON_PIN, ACKSEN_BUTTON_MODE_LONGPRESS, BUTTON_DEBOUNCE_INTERVAL, INPUT);
+
+//STATE MANAGEMENT
+enum state {WAITING, PAIN, VENDING};
+state currentState = WAITING;
+
+String incomingData = ""; // for incoming serial data
+
+void setup()
+{
+	Serial.begin(DEBUG_BAUD_RATE);
+	painButton.setLongPressInterval(PAIN_TIME*1000);	// *1000 to convert s to ms
+	Serial.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	Serial.println("Pain Machine V2.0 by Max Davy for Open Sauce 2026");
+	Serial.println("Available commands:\n\t'pain x' to set pain time to x seconds\n\t'vend x' to set selection wait time to x seconds");
+
+  pinMode(BLUE_LED_PIN, OUTPUT);
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+
+	pinMode(PAIN_OUTPUT, OUTPUT);
+}
+
+void loop()
+{
+	//UPDATE STATE
+	painButton.refreshStatus();
+  digitalWrite(BLUE_LED_PIN, LOW);
+  digitalWrite(RED_LED_PIN, LOW);
+  digitalWrite(GREEN_LED_PIN, LOW);
+	digitalWrite(PAIN_OUTPUT, HIGH);
+
+	//CHECK FOR SERIAL INPUT
+	if (Serial.available() > 0) {
+		// read the incoming byte:
+		incomingData = Serial.readString();
+
+		String command = incomingData.substring(0,incomingData.indexOf(' '));
+		int value = incomingData.substring(incomingData.indexOf(' ') + 1).toInt();
+
+		if(value<=0) {
+			Serial.print("status invalid");
+		}
+		else if(command=="vend") {
+			VEND_TIME = value;
+			Serial.print("vend ");
+			Serial.print(value);
+		}
+		else if(command=="pain") {
+			PAIN_TIME = value;
+			painButton.setLongPressInterval(PAIN_TIME*1000);
+			Serial.print("pain ");
+			Serial.print(value);
+		}
+		else {
+			Serial.print("status invalid");
+		}
+	}
+
+	//HANDLE BUTTON PRESS
+  switch (currentState) {
+    case WAITING:
+			// Vending machine is idle waiting for input
+			digitalWrite(BLUE_LED_PIN, HIGH);
+      if (painButton.getButtonState() == true)
+	    {
+				Serial.println("status pain");
+        currentState = PAIN;
+	    }
+      break;
+    case PAIN:
+			// Vending machine is administering pain
+			digitalWrite(RED_LED_PIN, HIGH);
+			
+      if (painButton.getButtonState() == false)
+	    {
+		    Serial.println("status incomplete");
+        currentState = WAITING;
+	    }
+      else if (painButton.onLongPress() == true)
+      {
+        Serial.println("status vending");
+        currentState = VENDING;
+      }
+      break;
+    case VENDING:
+			digitalWrite(GREEN_LED_PIN, HIGH);
+			// User has selected a product. Vend product and return to idle.
+      
+			digitalWrite(PAIN_OUTPUT, LOW);
+			delay(VEND_TIME * 1000);
+			digitalWrite(PAIN_OUTPUT, HIGH);
+			Serial.println("status standby");
+			currentState = WAITING;
+      break;
+    default:
+      Serial.print("status error");
+			currentState = WAITING;
+      break;
+  }
+
+	// Delay for one second before running the main loop again
+	delay(1000);
+}
+    </code></pre>
+            </div>
+        </div>
+
+        <div class="mySlides fade">
+            <div class="numbertext">3 / 3</div>
+            <img src="./images/pain.svg" style="width:100%;">
+        </div>
+
+        <a class="prev" onclick="plusSlides(-1)">❮</a>
+        <a class="next" onclick="plusSlides(1)">❯</a>
+
+    </div>
+    <br>
+
+    <div class="dots" style="text-align:center">
+        <span class="dot" onclick="currentSlide(1)"></span>
+        <span class="dot" onclick="currentSlide(2)"></span>
+        <span class="dot" onclick="currentSlide(3)"></span>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+
+    <script>
+        let slideIndex = 1;
+        let slideTimerId = null;
+        showSlides(slideIndex);
+
+        function plusSlides(n) {
+            showSlides(slideIndex += n);
+        }
+
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+        }
+
+        function showSlides(n) {
+            let i;
+            let slides = document.getElementsByClassName("mySlides");
+            let dots = document.getElementsByClassName("dot");
+            if (n > slides.length) { slideIndex = 1 }
+            if (n < 1) { slideIndex = slides.length }
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            slides[slideIndex - 1].style.display = "block";
+            dots[slideIndex - 1].className += " active";
+        }
+
+        // keeps the carousel from auto-advancing while the user is interacting
+        function startPlusSlides(intervalMs = 15000, idleMs = intervalMs) {
+            if (slideTimerId) return; // already running
+
+            let resetTimerId = null;
+
+            const resetTimer = () => {
+                if (slideTimerId) {
+                    clearInterval(slideTimerId);
+                    slideTimerId = null;
+                }
+
+                // restart after the user stops interacting for idleMs
+                if (resetTimerId) clearTimeout(resetTimerId);
+                resetTimerId = setTimeout(() => {
+                    slideTimerId = setInterval(() => {
+                        showSlides(slideIndex += 1);
+                    }, intervalMs);
+                }, idleMs);
+            };
+
+            // start immediately
+            slideTimerId = setInterval(() => {
+                showSlides(slideIndex += 1);
+            }, intervalMs);
+
+            // any interaction in the window resets the countdown
+            const events = ["keydown", "mousedown", "mousemove", "wheel", "touchstart", "pointerdown", "pointermove"];
+            events.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }));
+        }
+
+        // auto-scrolls down the code box
+        const codeBox = document.querySelector('.code-box');
+        if (!codeBox) throw new Error('Missing .code-box');
+
+        let rafId;
+        let lastTime = performance.now();
+        const speedPxPerSec = 70;
+
+        let pausedUntil = 0;
+
+        function pauseFor5s() {
+            pausedUntil = performance.now() + 5000;
+        }
+
+        // Disable auto-scroll on any user mouse movement or scrolling
+        window.addEventListener('mousemove', pauseFor5s, { passive: true });
+        window.addEventListener('wheel', pauseFor5s, { passive: true });
+        window.addEventListener('touchmove', pauseFor5s, { passive: true });
+
+        function tick(now) {
+            const dt = (now - lastTime) / 1000;
+            lastTime = now;
+
+            if (now >= pausedUntil) {
+                const maxScrollTop = codeBox.scrollHeight - codeBox.clientHeight;
+                if (maxScrollTop > 0) {
+                    codeBox.scrollTop += speedPxPerSec * dt;
+                    if (codeBox.scrollTop >= maxScrollTop) codeBox.scrollTop = 0;
+                }
+            }
+
+            rafId = requestAnimationFrame(tick);
+        }
+
+        rafId = requestAnimationFrame(tick);
+
+        window.addEventListener('beforeunload', () => cancelAnimationFrame(rafId));
+
+
+        startPlusSlides();
+        hljs.highlightAll();
+    </script>
+
+</body>
+
+</html>
